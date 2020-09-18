@@ -174,6 +174,7 @@ type Flag struct {
 	Usage               string              // help message
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
+	HideDefValue        bool                // used to show or hide the default value in usage messages
 	Changed             bool                // If the user set the value (or if left to default)
 	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
@@ -728,7 +729,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		line += usage
-		if !flag.defaultIsZeroValue() {
+		if !flag.defaultIsZeroValue() && !flag.HideDefValue {
 			if flag.Value.Type() == "string" {
 				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {
@@ -829,11 +830,12 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:      name,
-		Shorthand: shorthand,
-		Usage:     usage,
-		Value:     value,
-		DefValue:  value.String(),
+		Name:         name,
+		Shorthand:    shorthand,
+		Usage:        usage,
+		Value:        value,
+		DefValue:     value.String(),
+		HideDefValue: false,
 	}
 	f.AddFlag(flag)
 	return flag
